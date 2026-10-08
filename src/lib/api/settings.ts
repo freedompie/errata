@@ -29,6 +29,7 @@ export const settings = {
     guidedSuggestPrompt?: string
     disableThinking?: boolean
     expandThoughtsByDefault?: boolean
+    agentTimeoutSeconds?: number
   }) =>
     apiFetch<StoryMeta>(`/stories/${storyId}/settings`, {
       method: 'PATCH',

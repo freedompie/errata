@@ -57,6 +57,8 @@ export interface StoryMeta {
     guidedSuggestPrompt?: string
     disableThinking?: boolean
     expandThoughtsByDefault?: boolean
+    /** Seconds before a single agent run is aborted. */
+    agentTimeoutSeconds?: number
     /** erratanet provenance: installed-from pack and/or where this story is published. */
     erratanet?: {
       pack?: string

@@ -643,6 +643,16 @@ export function SettingsPanel({
                 disabled={updateMutation.isPending}
               />
             </SettingRow>
+            <SettingRow label="Agent timeout" description="Seconds before a single agent run is aborted">
+              <NumberField
+                value={story.settings.agentTimeoutSeconds ?? 300}
+                min={1}
+                max={3600}
+                step={30}
+                onChange={(v) => updateMutation.mutate({ agentTimeoutSeconds: v })}
+                disabled={updateMutation.isPending}
+              />
+            </SettingRow>
             <SettingRow label="Disable thinking" description="Suppress extended thinking / reasoning mode on models that support it">
               <Toggle
                 checked={story.settings.disableThinking ?? false}

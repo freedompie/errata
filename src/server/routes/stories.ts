@@ -172,6 +172,7 @@ export function storyRoutes(dataDir: string) {
         ...(body.enableHierarchicalSummary !== undefined ? { enableHierarchicalSummary: body.enableHierarchicalSummary } : {}),
         ...(body.disableThinking !== undefined ? { disableThinking: body.disableThinking } : {}),
         ...(body.expandThoughtsByDefault !== undefined ? { expandThoughtsByDefault: body.expandThoughtsByDefault } : {}),
+        ...(body.agentTimeoutSeconds !== undefined ? { agentTimeoutSeconds: body.agentTimeoutSeconds } : {}),
       }
 
       const applyGuidedPrompt = (
@@ -241,6 +242,7 @@ export function storyRoutes(dataDir: string) {
         guidedSuggestPrompt: t.Optional(t.String()),
         disableThinking: t.Optional(t.Boolean()),
         expandThoughtsByDefault: t.Optional(t.Boolean()),
+        agentTimeoutSeconds: t.Optional(t.Number()),
       }),
       detail: { summary: 'Update story settings' },
     })

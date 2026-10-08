@@ -1,4 +1,5 @@
 import { createLogger } from '../logging'
+import { getStory } from '../fragments/storage'
 import { agentRegistry } from './registry'
 import { ensureCoreAgentsRegistered } from './register-core'
 import { recordAgentRun } from './traces'
@@ -190,10 +191,16 @@ export async function invokeAgent<TOutput = unknown>(args: {
 }): Promise<AgentRunResult<TOutput>> {
   ensureCoreAgentsRegistered()
 
+  // Default timeout is driven by the story's settings (agentTimeoutSeconds),
+  // falling back to 5 minutes if the story or setting is unavailable. An
+  // explicit options.timeoutMs from a programmatic caller still takes precedence.
+  const story = await getStory(args.dataDir, args.storyId)
+  const defaultTimeoutMs = (story?.settings.agentTimeoutSeconds ?? 300) * 1000
+
   const options: Required<AgentCallOptions> = {
     maxDepth: args.options?.maxDepth ?? 3,
     maxCalls: args.options?.maxCalls ?? 20,
-    timeoutMs: args.options?.timeoutMs ?? 60000 * 5, 
+    timeoutMs: args.options?.timeoutMs ?? defaultTimeoutMs,
   }
 
   const runtime: RuntimeState = {
