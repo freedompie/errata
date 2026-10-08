@@ -68,4 +68,25 @@ describe('sharing/network', () => {
   it('appPort defaults to 7739', () => {
     expect(appPort()).toBe(7739)
   })
+
+  it('appPort respects PORT and NITRO_PORT', () => {
+    const oldPort = process.env.PORT
+    const oldNitroPort = process.env.NITRO_PORT
+    try {
+      delete process.env.PORT
+      delete process.env.NITRO_PORT
+      expect(appPort()).toBe(7739)
+
+      process.env.PORT = '8080'
+      expect(appPort()).toBe(8080)
+
+      process.env.NITRO_PORT = '9090'
+      expect(appPort()).toBe(9090)
+    } finally {
+      if (oldPort !== undefined) process.env.PORT = oldPort
+      else delete process.env.PORT
+      if (oldNitroPort !== undefined) process.env.NITRO_PORT = oldNitroPort
+      else delete process.env.NITRO_PORT
+    }
+  })
 })

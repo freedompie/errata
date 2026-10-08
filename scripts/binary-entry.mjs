@@ -44,4 +44,8 @@ fsPromises.readFile = async (path, ...args) => {
   }
 }
 
+// Ensure default port is 7739 (Errata's standard port) if not set by user
+process.env.PORT = process.env.PORT ?? '7739'
+process.env.NITRO_PORT = process.env.NITRO_PORT ?? process.env.PORT
+
 await import('../.output/server/index.mjs')

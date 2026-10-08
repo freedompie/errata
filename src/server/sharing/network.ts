@@ -23,6 +23,6 @@ export function toQrDataUrl(text: string): Promise<string> {
 
 /** The port the local app listens on (Nitro / vite dev). */
 export function appPort(): number {
-  const p = Number(process.env.PORT)
+  const p = Number(process.env.NITRO_PORT ?? process.env.PORT)
   return Number.isFinite(p) && p > 0 ? p : 7739
 }
