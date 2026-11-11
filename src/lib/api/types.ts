@@ -238,8 +238,15 @@ export interface LibrarianAcceptSuggestionResponse {
   createdFragmentId: string | null
 }
 
+export interface ChatToolCallRecord {
+  toolName: string
+  args?: Record<string, unknown>
+  result?: unknown
+  error?: string
+}
+
 export interface ChatHistory {
-  messages: Array<{ role: 'user' | 'assistant'; content: string; reasoning?: string }>
+  messages: Array<{ role: 'user' | 'assistant'; content: string; reasoning?: string; toolCalls?: ChatToolCallRecord[] }>
   updatedAt: string
 }
 
@@ -478,6 +485,8 @@ export type ChatEvent =
   | { type: 'prewriter-reset' }
   | { type: 'tool-call'; id: string; toolName: string; args: Record<string, unknown> }
   | { type: 'tool-result'; id: string; toolName: string; result: unknown }
+  | { type: 'tool-error'; id: string; toolName: string; args: Record<string, unknown>; error: string }
+  | { type: 'error'; error: string }
   | { type: 'phase'; phase: string }
   | { type: 'finish'; finishReason: string; stepCount: number }
   | { type: 'prewriter-directions'; directions: SuggestionDirection[] }

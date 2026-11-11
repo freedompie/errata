@@ -14,7 +14,7 @@
  *   --no-sync     assemble only; skip `cap sync android`
  *   --apk         also run the Gradle debug build (needs Android SDK + NDK)
  */
-import { cp, mkdir, readFile, rm, writeFile, access } from 'node:fs/promises'
+import { cp, mkdir, readFile, readdir, rm, writeFile, access } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { spawnSync } from 'node:child_process'
@@ -27,6 +27,32 @@ async function exists(path) {
     return true
   } catch {
     return false
+  }
+}
+
+/**
+ * Env for the web/server build. Vite picks the JSX runtime from NODE_ENV, so an inherited
+ * NODE_ENV=development yields a bundle full of jsxDEV calls that 500 on boot against the
+ * production React runtime. Always build the APK bundle as production.
+ */
+export function productionBuildEnv(env = process.env) {
+  return { ...env, NODE_ENV: 'production' }
+}
+
+/** Throw if any server chunk was compiled with the development JSX transform. */
+async function assertProductionServerBundle(serverDir) {
+  const entries = await readdir(serverDir, { recursive: true, withFileTypes: true })
+  for (const entry of entries) {
+    if (!entry.isFile() || !entry.name.endsWith('.mjs')) continue
+    const file = join(entry.parentPath ?? entry.path, entry.name)
+    // Compiled JSX reaches the runtime through a module binding (`jsxDevRuntimeExports.jsxDEV(`).
+    // Libraries like hast-util-to-jsx-runtime call a bare `jsxDEV(` param legitimately.
+    if (/\.jsxDEV\(/.test(await readFile(file, 'utf8'))) {
+      throw new Error(
+        `Server bundle was built in development JSX mode (${file} calls jsxDEV). ` +
+          'Rebuild with NODE_ENV=production (unset NODE_ENV, or drop --skip-build).',
+      )
+    }
   }
 }
 
@@ -47,6 +73,7 @@ export async function assembleMobileWww({
   if (!(await exists(publicDir))) {
     throw new Error(`No public assets at ${publicDir}. Run \`bun run build\` first.`)
   }
+  await assertProductionServerBundle(serverDir)
 
   const pkg = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'))
   const nodeDir = join(wwwDir, 'nodejs')
@@ -56,6 +83,8 @@ export async function assembleMobileWww({
   await mkdir(nodeDir, { recursive: true })
 
   await cp(join(root, 'mobile', 'shell', 'index.html'), join(wwwDir, 'index.html'))
+  // Web Speech shim, injected by MainActivity at document start (see the file header).
+  await cp(join(root, 'mobile', 'shell', 'webspeech-shim.js'), join(wwwDir, 'webspeech-shim.js'))
   await cp(join(root, 'mobile', 'node', 'main.cjs'), join(nodeDir, 'main.cjs'))
   await cp(join(root, 'mobile', 'node', 'boot.cjs'), join(nodeDir, 'boot.cjs'))
   await cp(serverDir, join(nodeDir, 'server'), { recursive: true })
@@ -100,7 +129,7 @@ async function main() {
 
   if (!args.has('--skip-build')) {
     console.info('[android] building web + server bundle')
-    run('bun', ['run', 'build'])
+    run('bun', ['run', 'build'], { env: productionBuildEnv() })
   }
 
   console.info('[android] assembling mobile/www')
@@ -113,7 +142,7 @@ async function main() {
 
   if (args.has('--apk')) {
     console.info('[android] gradle assembleDebug')
-    const gradlew = process.platform === 'win32' ? 'gradlew.bat' : './gradlew'
+    const gradlew = process.platform === 'win32' ? join(REPO_ROOT, 'android', 'gradlew.bat') : './gradlew'
     run(gradlew, ['assembleDebug'], { cwd: join(REPO_ROOT, 'android') })
     console.info('[android] APK: android/app/build/outputs/apk/debug/app-debug.apk')
   }

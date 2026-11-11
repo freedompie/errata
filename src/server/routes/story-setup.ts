@@ -37,6 +37,12 @@ export function storySetupRoutes(dataDir: string) {
         messages: t.Array(t.Object({
           role: t.Union([t.Literal('user'), t.Literal('assistant')]),
           content: t.String(),
+          toolCalls: t.Optional(t.Array(t.Object({
+            toolName: t.String(),
+            args: t.Optional(t.Record(t.String(), t.Any())),
+            result: t.Optional(t.Any()),
+            error: t.Optional(t.String()),
+          }))),
         })),
       }),
       detail: { summary: 'Continue the conversational story setup' },
@@ -75,6 +81,12 @@ export function storySetupRoutes(dataDir: string) {
         messages: t.Array(t.Object({
           role: t.Union([t.Literal('user'), t.Literal('assistant')]),
           content: t.String(),
+          toolCalls: t.Optional(t.Array(t.Object({
+            toolName: t.String(),
+            args: t.Optional(t.Record(t.String(), t.Any())),
+            result: t.Optional(t.Any()),
+            error: t.Optional(t.String()),
+          }))),
         })),
         draftFragments: t.Optional(t.Array(t.Object({
           key: t.String({ minLength: 1, maxLength: 50, pattern: '^[a-z0-9][a-z0-9-]*$' }),
@@ -85,7 +97,7 @@ export function storySetupRoutes(dataDir: string) {
             t.Literal('prose'),
           ]),
           name: t.String({ minLength: 1, maxLength: 100 }),
-          description: t.String({ minLength: 1, maxLength: 50 }),
+          description: t.String({ minLength: 1, maxLength: 250 }),
           content: t.String({ minLength: 1 }),
         }))),
       }),

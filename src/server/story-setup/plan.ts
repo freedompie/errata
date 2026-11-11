@@ -9,7 +9,7 @@ import type { StorySetupDraftFragment } from './schema'
 
 const StarterFragmentSchema = z.object({
   name: z.string().min(1).max(100),
-  description: z.string().min(1).max(50),
+  description: z.string().min(1).max(250),
   content: z.string().min(1),
 })
 
@@ -52,9 +52,10 @@ export async function generateStorySetupPlan(
   if (!story) throw new Error(`Story ${storyId} not found`)
 
   const existingFragments = await listFragments(dataDir, storyId)
-  const { model, temperature } = await getModel(dataDir, storyId, { role: 'story-setup.plan' })
-  const providerOptions = buildProviderOptions(story.settings.disableThinking ?? false) as
-    | Record<string, Record<string, string>>
+  const resolvedModel = await getModel(dataDir, storyId, { role: 'story-setup.plan' })
+  const { model, temperature } = resolvedModel
+  const providerOptions = buildProviderOptions(story.settings.disableThinking ?? false, resolvedModel) as
+    | Parameters<typeof generateText>[0]['providerOptions']
     | undefined
 
   const submitStorySetupPlan = tool({
@@ -114,7 +115,7 @@ function makeFragment(
     id: generateFragmentId(type),
     type,
     name: name.slice(0, 100),
-    description: description.slice(0, 50),
+    description: description.slice(0, 250),
     content: content.trim(),
     tags: [],
     refs: [],

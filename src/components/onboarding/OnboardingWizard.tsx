@@ -131,8 +131,8 @@ const PROVIDER_CARDS = {
   gemini: {
     name: 'Google Gemini',
     baseURL: 'https://generativelanguage.googleapis.com/v1beta',
-    defaultModel: 'gemini-3.5-flash',
-    models: ['gemini-3.5-flash', 'gemini-3.1-pro-preview', 'gemini-2.5-flash'],
+    defaultModel: 'gemini-3.8-flash',
+    models: ['gemini-3.8-flash', 'gemini-4-argon', 'gemini-3.5-flash', 'gemini-2.5-flash'],
     description: 'Native Gemini models with tool use and long-context reasoning.',
     accent: 'indigo',
     customHeaders: {},
@@ -203,17 +203,17 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
   const [selectedPreset, setSelectedPreset] = useState<PresetKey | null>(null)
 
   return (
-    <div className="fixed inset-0 bg-background z-50" data-component-id="onboarding-root">
+    <div className="fixed inset-0 bg-background z-50 p-safe" data-component-id="onboarding-root">
       <GuillocheBackground />
       <div className="relative z-10 h-full overflow-auto">
         <Wizard step={step}>
           <Wizard.Step stepKey="theme" transition="fade">
-            <div className="flex items-center justify-center min-h-full">
+            <div className="flex items-center-safe justify-center min-h-full">
               <ThemeStep onNext={() => setStep('typography')} />
             </div>
           </Wizard.Step>
           <Wizard.Step stepKey="typography" transition="fade">
-            <div className="flex items-center justify-center min-h-full">
+            <div className="flex items-center-safe justify-center min-h-full">
               <TypographyStep
                 onNext={() => setStep('welcome')}
                 onBack={() => setStep('theme')}
@@ -221,12 +221,12 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
             </div>
           </Wizard.Step>
           <Wizard.Step stepKey="welcome" transition="fade">
-            <div className="flex items-center justify-center min-h-full">
+            <div className="flex items-center-safe justify-center min-h-full">
               <WelcomeStep onNext={() => setStep('provider-select')} />
             </div>
           </Wizard.Step>
           <Wizard.Step stepKey="provider-select" transition="fade">
-            <div className="flex items-center justify-center min-h-full">
+            <div className="flex items-center-safe justify-center min-h-full">
               <ProviderSelectStep
                 onSelect={(preset) => {
                   setSelectedPreset(preset)
@@ -238,7 +238,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
           </Wizard.Step>
           <Wizard.Step stepKey="provider-setup" transition="fade">
             {selectedPreset && (
-              <div className="flex items-center justify-center min-h-full">
+              <div className="flex items-center-safe justify-center min-h-full">
                 <ProviderSetupStep
                   preset={selectedPreset}
                   onComplete={onComplete}
