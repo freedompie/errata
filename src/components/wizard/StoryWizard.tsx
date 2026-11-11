@@ -182,7 +182,6 @@ export function StoryWizard({ storyId, onComplete }: StoryWizardProps) {
   const [draftFragments, setDraftFragments] = useState<StorySetupDraftFragment[]>([])
   const [sessionLoaded, setSessionLoaded] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
-  const initialRequestRef = useRef(false)
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const endRef = useRef<HTMLDivElement | null>(null)
 
@@ -262,14 +261,8 @@ export function StoryWizard({ storyId, onComplete }: StoryWizardProps) {
   }, [storyId])
 
   useEffect(() => {
-    if (!sessionLoaded) return
-    if (initialRequestRef.current) return
-    initialRequestRef.current = true
-    if (messages.length === 0 || messages.at(-1)?.role === 'user') {
-      requestAssistant(messages)
-    }
     return () => abortRef.current?.abort()
-  }, [messages, requestAssistant, sessionLoaded])
+  }, [])
 
   useEffect(() => {
     if (!sessionLoaded) return
@@ -277,7 +270,7 @@ export function StoryWizard({ storyId, onComplete }: StoryWizardProps) {
   }, [checklist, draftFragments, messages, sessionLoaded, storyId])
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: isStreaming ? 'auto' : 'smooth', block: 'end' })
+    endRef.current?.scrollIntoView?.({ behavior: isStreaming ? 'auto' : 'smooth', block: 'end' })
   }, [messages, streamingText, isStreaming])
 
   useEffect(() => {
@@ -345,8 +338,8 @@ export function StoryWizard({ storyId, onComplete }: StoryWizardProps) {
 
                 {isStreaming && <AssistantTurn content={streamingText} streaming={Boolean(streamingText)} />}
 
-                {userTurnCount === 0 && !isStreaming && messages.some(message => message.role === 'assistant') && (
-                  <div className="ml-10 space-y-3 sm:ml-11">
+                {userTurnCount === 0 && !isStreaming && (
+                  <div className={messages.length > 0 ? 'ml-10 space-y-3 sm:ml-11' : 'space-y-3'}>
                     <p className="text-xs text-muted-foreground">You can start anywhere</p>
                     <div className="flex flex-wrap gap-2">
                       {STARTING_POINTS.map(point => (
